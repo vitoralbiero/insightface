@@ -219,6 +219,10 @@ def train_net(args):
         context=ctx,
         symbol=sym,
     )
+    # added this line
+    if args.loss == 'triplet':
+        model.bind([("data", (args.batch_size, args.image_channel, image_size[0], image_size[1]))],
+                   [("softmax_label", (args.batch_size,))])
     val_dataiter = None
 
     if config.loss_name.find('triplet') >= 0:
@@ -281,7 +285,7 @@ def train_net(args):
         results = []
         for i in range(len(ver_list)):
             acc1, std1, acc2, std2, xnorm, embeddings_list = verification.test(
-                ver_list[i], model, args.batch_size, 10, None, None)
+                ver_list[i], model, args.batch_size, 1, None, None)
             logging.info('[{}][{}]XNorm: {:f}'.format(ver_name_list[i], nbatch, xnorm))
             # logging.info('[%s][%d]Accuracy: %1.5f+-%1.5f' % (ver_name_list[i], nbatch, acc1, std1))
             logging.info('[{}][{}]Accuracy-Flip: {:0.5f}+-{:0.5f}'.format(ver_name_list[i], nbatch, acc2, std2))

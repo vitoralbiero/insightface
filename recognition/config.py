@@ -20,7 +20,7 @@ config.ce_loss = True
 config.fc7_lr_mult = 1.0
 config.fc7_wd_mult = 1.0
 config.fc7_no_bias = False
-config.max_steps = 360000
+config.max_steps = 100000
 config.data_rand_mirror = True
 config.data_cutoff = False
 config.data_color = 0
@@ -111,6 +111,34 @@ network.mnas025.net_multiplier = 0.25
 # dataset settings
 dataset = edict()
 
+dataset.vggface2_age_balanced = edict()
+dataset.vggface2_age_balanced.dataset = 'vggface2_age_balanced'
+dataset.vggface2_age_balanced.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/age_balanced/'
+dataset.vggface2_age_balanced.num_classes = 4936
+dataset.vggface2_age_balanced.image_shape = (112, 112, 3)
+dataset.vggface2_age_balanced.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.vggface2_old = edict()
+dataset.vggface2_old.dataset = 'vggface2_old'
+dataset.vggface2_old.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/old/'
+dataset.vggface2_old.num_classes = 2009
+dataset.vggface2_old.image_shape = (112, 112, 3)
+dataset.vggface2_old.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.vggface2_middle = edict()
+dataset.vggface2_middle.dataset = 'vggface2_middle'
+dataset.vggface2_middle.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/middle/'
+dataset.vggface2_middle.num_classes = 2009
+dataset.vggface2_middle.image_shape = (112, 112, 3)
+dataset.vggface2_middle.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.vggface2_young = edict()
+dataset.vggface2_young.dataset = 'vggface2_young'
+dataset.vggface2_young.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/young/'
+dataset.vggface2_young.num_classes = 2009
+dataset.vggface2_young.image_shape = (112, 112, 3)
+dataset.vggface2_young.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
 dataset.vggface2_females = edict()
 dataset.vggface2_females.dataset = 'vggface2_females'
 dataset.vggface2_females.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/females_only/'
@@ -151,7 +179,7 @@ dataset.vggface2_mixed_full.dataset = 'vggface2_mixed_full'
 dataset.vggface2_mixed_full.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/mixed_full/'
 dataset.vggface2_mixed_full.num_classes = 6954
 dataset.vggface2_mixed_full.image_shape = (112, 112, 3)
-dataset.vggface2_mixed_full.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+dataset.vggface2_mixed_full.val_targets = ['lfw', 'cfp_fp', 'agedb_30_balanced']
 
 dataset.vggface2 = edict()
 dataset.vggface2.dataset = 'vggface2'
@@ -237,7 +265,7 @@ default = edict()
 # default network
 default.network = 'r100'
 default.pretrained = ''
-default.pretrained_epoch = 1
+default.pretrained_epoch = 0
 # default dataset
 default.dataset = 'vggface2'
 default.loss = 'arcface'
@@ -246,13 +274,13 @@ default.verbose = 2000
 default.kvstore = 'device'
 
 default.end_epoch = 10000
-default.lr = 0.1
+default.lr = 0.001
 default.wd = 0.0005
 default.mom = 0.9
 default.per_batch_size = 64
 default.ckpt = 3
-default.lr_steps = '200000,320000'
-default.models_root = '../../ext_vol2/training/mxnet/'
+default.lr_steps = '50000,70000'
+default.models_root = '../../ext_vol2/training/mxnet_scratch/'
 
 
 def generate_config(_network, _dataset, _loss):

@@ -59,8 +59,8 @@ def load_image_from_bin(bin_path, save_dir):
 
 
 if __name__ == '__main__':
-    bin_path = '../../datasets/faces_vgg_112x112/agedb_30.bin'
-    save_dir = '../../datasets/faces_vgg_112x112/agedb_30/'
+    bin_path = '/hd3/AgeDB-30/Protocols/agedb_30_balanced.bin'
+    save_dir = '/hd3/AgeDB-30/Protocols/agedb_30_balanced/'
     # rec_path = 'D:/face_data_emore/faces_emore'
     # load_mx_rec(rec_path)
     load_image_from_bin(bin_path, save_dir)
