@@ -220,7 +220,7 @@ def train_net(args):
         symbol=sym,
     )
     # added this line
-    if args.loss == 'triplet':
+    if args.loss == 'triplet' or args.loss == 'atriplet':
         model.bind([("data", (args.batch_size, args.image_channel, image_size[0], image_size[1]))],
                    [("softmax_label", (args.batch_size,))])
     val_dataiter = None

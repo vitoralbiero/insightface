@@ -20,7 +20,7 @@ config.ce_loss = True
 config.fc7_lr_mult = 1.0
 config.fc7_wd_mult = 1.0
 config.fc7_no_bias = False
-config.max_steps = 100000
+config.max_steps = 400000
 config.data_rand_mirror = True
 config.data_cutoff = False
 config.data_color = 0
@@ -111,6 +111,90 @@ network.mnas025.net_multiplier = 0.25
 # dataset settings
 dataset = edict()
 
+dataset.chiya_v1 = edict()
+dataset.chiya_v1.dataset = 'chiya_v1'
+dataset.chiya_v1.dataset_path = '../../ext_vol2/training_datasets/chiya/zipped/chiya_v1/'
+dataset.chiya_v1.num_classes = 207908
+dataset.chiya_v1.image_shape = (112, 112, 3)
+dataset.chiya_v1.val_targets = ['chiya_val_hard_pairs']
+
+dataset.ms1m_v2_vgg2_size = edict()
+dataset.ms1m_v2_vgg2_size.dataset = 'ms1m_v2_vgg2_size'
+dataset.ms1m_v2_vgg2_size.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/vgg2_size/'
+dataset.ms1m_v2_vgg2_size.num_classes = 8631
+dataset.ms1m_v2_vgg2_size.image_shape = (112, 112, 3)
+dataset.ms1m_v2_vgg2_size.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_females = edict()
+dataset.ms1m_v2_females.dataset = 'ms1m_v2_females'
+dataset.ms1m_v2_females.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/females_only/'
+dataset.ms1m_v2_females.num_classes = 22499
+dataset.ms1m_v2_females.image_shape = (112, 112, 3)
+dataset.ms1m_v2_females.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_males = edict()
+dataset.ms1m_v2_males.dataset = 'ms1m_v2_males'
+dataset.ms1m_v2_males.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/males_only/'
+dataset.ms1m_v2_males.num_classes = 22499
+dataset.ms1m_v2_males.image_shape = (112, 112, 3)
+dataset.ms1m_v2_males.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_mixed_half = edict()
+dataset.ms1m_v2_mixed_half.dataset = 'ms1m_v2_mixed_half'
+dataset.ms1m_v2_mixed_half.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/mixed_half/'
+dataset.ms1m_v2_mixed_half.num_classes = 22498
+dataset.ms1m_v2_mixed_half.image_shape = (112, 112, 3)
+dataset.ms1m_v2_mixed_half.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_m25_f75 = edict()
+dataset.ms1m_v2_m25_f75.dataset = 'ms1m_v2_m25_f75'
+dataset.ms1m_v2_m25_f75.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/males_25_females_75/'
+dataset.ms1m_v2_m25_f75.num_classes = 22499
+dataset.ms1m_v2_m25_f75.image_shape = (112, 112, 3)
+dataset.ms1m_v2_m25_f75.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_m75_f25 = edict()
+dataset.ms1m_v2_m75_f25.dataset = 'ms1m_v2_m75_f25'
+dataset.ms1m_v2_m75_f25.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/males_75_females_25/'
+dataset.ms1m_v2_m75_f25.num_classes = 22499
+dataset.ms1m_v2_m75_f25.image_shape = (112, 112, 3)
+dataset.ms1m_v2_m75_f25.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_mixed_full = edict()
+dataset.ms1m_v2_mixed_full.dataset = 'ms1m_v2_mixed_full'
+dataset.ms1m_v2_mixed_full.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/mixed_full/'
+dataset.ms1m_v2_mixed_full.num_classes = 44998
+dataset.ms1m_v2_mixed_full.image_shape = (112, 112, 3)
+dataset.ms1m_v2_mixed_full.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_age_balanced = edict()
+dataset.ms1m_v2_age_balanced.dataset = 'ms1m_v2_age_balanced'
+dataset.ms1m_v2_age_balanced.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/age_balanced/'
+dataset.ms1m_v2_age_balanced.num_classes = 14848
+dataset.ms1m_v2_age_balanced.image_shape = (112, 112, 3)
+dataset.ms1m_v2_age_balanced.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_old = edict()
+dataset.ms1m_v2_old.dataset = 'ms1m_v2_old'
+dataset.ms1m_v2_old.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/old/'
+dataset.ms1m_v2_old.num_classes = 5033
+dataset.ms1m_v2_old.image_shape = (112, 112, 3)
+dataset.ms1m_v2_old.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_middle = edict()
+dataset.ms1m_v2_middle.dataset = 'ms1m_v2_middle'
+dataset.ms1m_v2_middle.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/middle/'
+dataset.ms1m_v2_middle.num_classes = 5033
+dataset.ms1m_v2_middle.image_shape = (112, 112, 3)
+dataset.ms1m_v2_middle.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
+dataset.ms1m_v2_young = edict()
+dataset.ms1m_v2_young.dataset = 'ms1m_v2_young'
+dataset.ms1m_v2_young.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/young/'
+dataset.ms1m_v2_young.num_classes = 5033
+dataset.ms1m_v2_young.image_shape = (112, 112, 3)
+dataset.ms1m_v2_young.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
+
 dataset.vggface2_age_balanced = edict()
 dataset.vggface2_age_balanced.dataset = 'vggface2_age_balanced'
 dataset.vggface2_age_balanced.dataset_path = '../../ext_vol2/training_datasets/vggface2/zipped/train_112x112/age_balanced/'
@@ -190,7 +274,7 @@ dataset.vggface2.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
 
 dataset.ms1m_v2 = edict()
 dataset.ms1m_v2.dataset = 'ms1m_v2'
-dataset.ms1m_v2.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/full_dataset/'
+dataset.ms1m_v2.dataset_path = '../../ext_vol2/training_datasets/ms1m_v2/zipped/full_dataset/'
 dataset.ms1m_v2.num_classes = 85742
 dataset.ms1m_v2.image_shape = (112, 112, 3)
 dataset.ms1m_v2.val_targets = ['lfw', 'cfp_fp', 'agedb_30']
@@ -274,13 +358,13 @@ default.verbose = 2000
 default.kvstore = 'device'
 
 default.end_epoch = 10000
-default.lr = 0.001
+default.lr = 0.1
 default.wd = 0.0005
 default.mom = 0.9
 default.per_batch_size = 64
 default.ckpt = 3
-default.lr_steps = '50000,70000'
-default.models_root = '../../ext_vol2/training/mxnet_scratch/'
+default.lr_steps = '200000,280000,320000'
+default.models_root = '../../ext_vol2/training/mxnet/'
 
 
 def generate_config(_network, _dataset, _loss):

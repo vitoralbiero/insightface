@@ -33,6 +33,7 @@ from easydict import EasyDict as edict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import face_preprocess
 import face_image
+from os import path
 
 try:
     import multiprocessing
@@ -53,6 +54,7 @@ def read_list(path_in):
             item = edict()
             item.flag = 0
             item.image_path, label, item.bbox, item.landmark, item.aligned = face_preprocess.parse_lst_line(line)
+            # item.is_card = int(path.split(item.image_path)[1][0] == 'X')
             if not item.aligned and item.landmark is None:
               #print('ignore line', line)
               continue
@@ -70,6 +72,7 @@ def read_list(path_in):
         item.flag = 2
         item.id = 0
         item.label = [float(_id), float(_id+len(identities))]
+        # item.is_card = 2
         yield item
         for identity in identities:
           item = edict()
@@ -77,6 +80,7 @@ def read_list(path_in):
           item.id = _id
           _id+=1
           item.label = [float(identity[0]), float(identity[1])]
+          # item.is_card = 2
           yield item
 
 
@@ -90,8 +94,14 @@ def image_encode(args, i, item, q_out):
       #print('write', item.flag, item.id, item.label)
       if item.aligned:
         with open(fullpath, 'rb') as fin:
-            img = fin.read()
+          img = fin.read()
         s = mx.recordio.pack(header, img)
+
+        # img = face_preprocess.read_image(fullpath)
+        # img = img[...,::-1]
+        # img = cv2.resize(img, (112, 112))
+        # s = mx.recordio.pack_img(header, img, quality=args.quality, img_fmt=args.encoding)
+
         q_out.put((i, s, oitem))
       else:
         img = cv2.imread(fullpath, args.color)

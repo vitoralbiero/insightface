@@ -70,6 +70,10 @@ max_size = 800
 
 def get_norm_crop(image_path):
     im = cv2.imread(image_path)
+
+    if im is None:
+        print(image_path)
+
     im_shape = im.shape
     im_size_min = np.min(im_shape[0:2])
     im_size_max = np.max(im_shape[0:2])
@@ -113,8 +117,17 @@ for line in open(os.path.join(args.data_dir, 'pairs_label.txt'), 'r'):
     assert len(line) == 3
     path1 = os.path.join(args.data_dir, line[0])
     path2 = os.path.join(args.data_dir, line[1])
+
+    # print(path1, path2)
+
     im1 = get_norm_crop(path1)
     im2 = get_norm_crop(path2)
+
+    if im1 is None or im1 == []:
+        print(path1)
+
+    if im2 is None or im2 == []:
+        print(path2)
 
     issame = True
     if line[2] == '-1':
