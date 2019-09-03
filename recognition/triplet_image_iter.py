@@ -29,7 +29,6 @@ logger = logging.getLogger()
 
 
 class FaceImageIter(io.DataIter):
-
     def __init__(self, batch_size, data_shape,
                  path_imgrec=None,
                  shuffle=False, aug_list=None,
@@ -41,14 +40,17 @@ class FaceImageIter(io.DataIter):
         super(FaceImageIter, self).__init__()
         assert path_imgrec
         assert shuffle
-        logging.info('loading recordio {}...'.format(path_imgrec))
+        logging.info('loading recordio %s...',
+                     path_imgrec)
         path_imgidx = path_imgrec[0:-4] + ".idx"
-        self.imgrec = recordio.MXIndexedRecordIO(
-            path_imgidx, path_imgrec, 'r')  # pylint: disable=redefined-variable-type
+
+        # pylint: disable=redefined-variable-type
+        self.imgrec = recordio.MXIndexedRecordIO(path_imgidx, path_imgrec, 'r')
+
         s = self.imgrec.read_idx(0)
         header, _ = recordio.unpack(s)
         assert header.flag > 0
-        logging.info('header0 label {}'.format(header.label))
+        print('header0 label', header.label)
         self.header0 = (int(header.label[0]), int(header.label[1]))
         # assert(header.flag==1)
         self.imgidx = range(1, int(header.label[0]))
@@ -60,9 +62,9 @@ class FaceImageIter(io.DataIter):
             a, b = int(header.label[0]), int(header.label[1])
             self.id2range[identity] = (a, b)
 
-        logging.info('id2range {}'.format(len(self.id2range)))
+        print('id2range', len(self.id2range))
         self.seq = self.imgidx
-        logging.info(len(self.seq))
+        print(len(self.seq))
 
         self.check_data_shape(data_shape)
         self.provide_data = [(data_name, (batch_size,) + data_shape)]
@@ -71,19 +73,21 @@ class FaceImageIter(io.DataIter):
         self.shuffle = shuffle
         self.image_size = '%d,%d' % (data_shape[1], data_shape[2])
         self.rand_mirror = rand_mirror
-        logging.info('rand_mirror {} '.format(rand_mirror))
+        print('rand_mirror', rand_mirror)
         self.cutoff = cutoff
         # self.cast_aug = mx.image.CastAug()
         # self.color_aug = mx.image.ColorJitterAug(0.4, 0.4, 0.4)
         self.ctx_num = ctx_num
         self.per_batch_size = int(self.batch_size / self.ctx_num)
         self.images_per_identity = images_per_identity
+
         if self.images_per_identity > 0:
             self.identities = int(self.per_batch_size / self.images_per_identity)
             self.per_identities = self.identities
             self.repeat = 3000000.0 / (self.images_per_identity * len(self.id2range))
             self.repeat = int(self.repeat)
-            logging.info('{} {} {}'.format(self.images_per_identity, self.identities, self.repeat))
+            print(self.images_per_identity, self.identities, self.repeat)
+
         self.mx_model = mx_model
         self.triplet_params = triplet_params
         self.triplet_mode = False
@@ -103,6 +107,7 @@ class FaceImageIter(io.DataIter):
             self.triplet_seq = []
             self.triplet_reset()
             self.seq_min_size = self.batch_size * 2
+
         self.cur = 0
         self.nbatch = 0
         self.is_init = False
@@ -114,6 +119,7 @@ class FaceImageIter(io.DataIter):
         for i in range(self.ctx_num):
             nd_embedding = mx.nd.array(embeddings, mx.gpu(i))
             nd_embedding_list.append(nd_embedding)
+
         nd_pdists = []
         pdists = []
         for idx in range(embeddings.shape[0]):
@@ -124,10 +130,12 @@ class FaceImageIter(io.DataIter):
             body = body * body
             body = mx.nd.sum_axis(body, axis=1)
             nd_pdists.append(body)
+
             if len(nd_pdists) == self.ctx_num or idx == embeddings.shape[0] - 1:
                 for x in nd_pdists:
                     pdists.append(x.asnumpy())
                 nd_pdists = []
+
         return pdists
 
     def pick_triplets(self, embeddings, nrof_images_per_class, tag):
@@ -157,42 +165,29 @@ class FaceImageIter(io.DataIter):
                     # self.times[4] += self.time_elapsed()
                     # self.time_reset()
                     neg_dists_sqr[emb_start_idx:emb_start_idx + nrof_images] = np.NaN
-
-                    # select only card vs selfies (CHIYA SELECTION)
-                    # neg_dists_sqr2 = neg_dists_sqr[tag[:, 2] != tag[a_idx, 2]]
-                    # neg_dists_sqr2 = np.copy(neg_dists_sqr)
-
                     if self.triplet_max_ap > 0.0:
                         if pos_dist_sqr > self.triplet_max_ap:
                             continue
 
                     # FaceNet selection
-                    # all_neg = np.where(np.logical_and(neg_dists_sqr - pos_dist_sqr < self.triplet_alpha,
-                    #                                  pos_dist_sqr < neg_dists_sqr))[0]
+                    all_neg = np.where(np.logical_and(neg_dists_sqr - pos_dist_sqr < self.triplet_alpha,
+                                                      pos_dist_sqr < neg_dists_sqr))[0]
 
                     # CHIYA selection
-                    all_neg = np.where(np.logical_and(np.logical_and(
-                                                      neg_dists_sqr - pos_dist_sqr < self.triplet_alpha,
-                                                      pos_dist_sqr < neg_dists_sqr),
-                                                      tag[:, 2] != tag[a_idx, 2]))[0]
-
-                    # CHIYA selection (hard pairs)
-                    # all_neg = np.where(np.logical_and(neg_dists_sqr - pos_dist_sqr < self.triplet_alpha,
+                    # all_neg = np.where(np.logical_and(np.logical_and(
+                    #                                   neg_dists_sqr - pos_dist_sqr < self.triplet_alpha,
+                    #                                   pos_dist_sqr < neg_dists_sqr),
                     #                                   tag[:, 2] != tag[a_idx, 2]))[0]
 
                     # self.times[5] += self.time_elapsed()
                     # self.time_reset()
-
-                    # VGG Face selecction
-                    # all_neg = np.where(neg_dists_sqr-pos_dist_sqr<alpha)[0]
-
+                    # all_neg = np.where(neg_dists_sqr-pos_dist_sqr<alpha)[0] # VGG Face selecction
                     nrof_random_negs = all_neg.shape[0]
                     if nrof_random_negs > 0:
                         rnd_idx = np.random.randint(nrof_random_negs)
                         n_idx = all_neg[rnd_idx]
                         triplets.append((a_idx, p_idx, n_idx))
-
-                emb_start_idx += nrof_images
+            emb_start_idx += nrof_images
 
         np.random.shuffle(triplets)
         return triplets
@@ -212,7 +207,8 @@ class FaceImageIter(io.DataIter):
             if len(_list) > self.images_per_identity:
                 _list = _list[0:self.images_per_identity]
             self.triplet_seq += _list
-        logging.info('triplet_seq {}'.format(len(self.triplet_seq)))
+
+        print('triplet_seq', len(self.triplet_seq))
         assert len(self.triplet_seq) >= self.triplet_bag_size
 
     def time_reset(self):
@@ -234,12 +230,12 @@ class FaceImageIter(io.DataIter):
             # label = np.zeros( (bag_size,) )
             tag = []
             # idx = np.zeros( (bag_size,) )
-            logging.info('eval {} images.. {}'.format(bag_size, self.triplet_cur))
-            logging.info('triplet time stat {}'.format(self.times))
+            print('eval %d images..' % bag_size, self.triplet_cur)
+            print('triplet time stat', self.times)
             if self.triplet_cur + bag_size > len(self.triplet_seq):
                 self.triplet_reset()
                 # bag_size = min(bag_size, len(self.triplet_seq))
-                logging.info('eval {} images... {}'.format(bag_size, self.triplet_cur))
+                print('eval %d images..' % bag_size, self.triplet_cur)
             self.times[0] += self.time_elapsed()
             self.time_reset()
             # print(data.shape)
@@ -248,12 +244,12 @@ class FaceImageIter(io.DataIter):
             if self.provide_label is not None:
                 label = nd.zeros(self.provide_label[0][1])
             ba = 0
+
             while True:
                 bb = min(ba + batch_size, bag_size)
                 if ba >= bb:
                     break
                 _count = bb - ba
-
                 # data = nd.zeros( (_count,)+self.data_shape )
                 # _batch = self.data_iter.next()
                 # _data = _batch.data[0].asnumpy()
@@ -273,7 +269,11 @@ class FaceImageIter(io.DataIter):
                         _label = _label[0]
                     if label is not None:
                         label[i - ba][:] = _label
+
+                    # tag.append((int(_label), _idx))
+                    # CHIYA
                     tag.append((int(_label), _idx, header.id2))
+
                     # idx[i] = _idx
 
                 db = mx.io.DataBatch(data=(data,))
@@ -290,6 +290,7 @@ class FaceImageIter(io.DataIter):
                     embeddings = np.zeros((bag_size, net_out.shape[1]))
                 embeddings[ba:bb, :] = net_out
                 ba = bb
+
             assert len(tag) == bag_size
             self.triplet_cur += bag_size
             embeddings = sklearn.preprocessing.normalize(embeddings)
@@ -302,8 +303,9 @@ class FaceImageIter(io.DataIter):
                 else:
                     nrof_images_per_class.append(1)
 
-            triplets = self.pick_triplets(embeddings, nrof_images_per_class, tag)  # shape=(T,3)
-            logging.info('found triplets {}'.format(len(triplets)))
+            # shape=(T,3)
+            triplets = self.pick_triplets(embeddings, nrof_images_per_class, tag)
+            print('found triplets', len(triplets))
             ba = 0
             while True:
                 bb = ba + self.per_batch_size // 3
@@ -330,7 +332,7 @@ class FaceImageIter(io.DataIter):
         while ba < len(self.oseq):
             batch_num += 1
             if batch_num % 10 == 0:
-                logging.info('loading batch {}'.format(batch_num, ba))
+                print('loading batch', batch_num, ba)
             bb = min(ba + self.batch_size, len(self.oseq))
             _count = bb - ba
             for i in range(_count):
@@ -360,9 +362,9 @@ class FaceImageIter(io.DataIter):
         t = AnnoyIndex(d, metric='euclidean')
         for i in range(X.shape[0]):
             t.add_item(i, X[i])
-        logging.info('start to build index')
+        print('start to build index')
         t.build(20)
-        logging.info(X.shape)
+        print(X.shape)
         k = self.per_identities
         self.seq = []
         for i in range(X.shape[0]):
@@ -393,7 +395,7 @@ class FaceImageIter(io.DataIter):
         # print(I.shape)
         # self.seq = []
         # for i in range(I.shape[0]):
-        #  #assert I[i][0]==i
+        #  # assert I[i][0]==i
         #  for j in range(k):
         #    _label = I[i][j]
         #    assert _label<len(self.id2range)
@@ -410,7 +412,7 @@ class FaceImageIter(io.DataIter):
 
     def reset(self):
         """Resets the iterator to the beginning of the data."""
-        logging.info('call reset()')
+        print('call reset()')
         self.cur = 0
         if self.images_per_identity > 0:
             if self.triplet_mode:
@@ -423,7 +425,7 @@ class FaceImageIter(io.DataIter):
                     idlist.append((_id, range(*v)))
                 for r in range(self.repeat):
                     if r % 10 == 0:
-                        logging.info('repeat {}'.format(r))
+                        print('repeat', r)
                     if self.shuffle:
                         random.shuffle(idlist)
                     for item in idlist:
@@ -439,12 +441,12 @@ class FaceImageIter(io.DataIter):
                             self.seq.append(_idx)
             else:
                 self.hard_mining_reset()
-            logging.info('seq len {}'.format(len(self.seq)))
+            print('seq len', len(self.seq))
         else:
             if self.shuffle:
                 random.shuffle(self.seq)
-        if self.seq is None and self.imgrec is not None:
-            self.imgrec.reset()
+            if self.seq is None and self.imgrec is not None:
+                self.imgrec.reset()
 
     def num_samples(self):
         return len(self.seq)
@@ -458,7 +460,6 @@ class FaceImageIter(io.DataIter):
             s = self.imgrec.read_idx(idx)
             header, img = recordio.unpack(s)
             label = header.label
-
             if not isinstance(label, numbers.Number):
                 label = label[0]
             return label, img, None, None
@@ -535,7 +536,7 @@ class FaceImageIter(io.DataIter):
                     _data = _data.astype('float32')
                     # print(starth, endh, startw, endw, _data.shape)
                     _data[starth:endh, startw:endw, :] = 127.5
-                #_npdata = _data.asnumpy()
+                # _npdata = _data.asnumpy()
                 # if landmark is not None:
                 #  _npdata = face_preprocess.preprocess(_npdata, bbox = bbox, landmark=landmark, image_size=self.image_size)
                 # if self.rand_mirror:
@@ -546,7 +547,7 @@ class FaceImageIter(io.DataIter):
                 #  _npdata *= 0.0078125
                 # nimg = np.zeros(_npdata.shape, dtype=np.float32)
                 # nimg[self.patch[1]:self.patch[3],self.patch[0]:self.patch[2],:] = _npdata[self.patch[1]:self.patch[3], self.patch[0]:self.patch[2], :]
-                #_data = mx.nd.array(nimg)
+                # _data = mx.nd.array(nimg)
                 data = [_data]
                 try:
                     self.check_valid_image(data)
